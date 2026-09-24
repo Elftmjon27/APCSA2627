@@ -9,8 +9,6 @@ public class Lemon {
 		
 		l1.instructions(sc);
 		l1.navigation(sc);
-		
-		
 	}
 }
 

@@ -8,10 +8,9 @@ public class LemonadeStand {
 	private double[] cost = {1.50, 2.00, 0.75, 0.25}; // {Lemons, Sugar, Ice, Cups}
 	private int[] qty; // {Lemons, Sugar, Ice, Cups}
 	private double pricePerCup;
-	private int[] ratio; // {lemons per pitcher, sugar per pitcher, ice per cup}
+	private int[] ratio; // {lemons per pitcher, sugar per pitcher, ice per cup, cup per pitcher}
 	private int cupsAvail;
 	private int pitchCount; // Total pitches of lemonade remaining
-	private int cupPerPitch = 12;
 	
 	private int totalCustomers;
 	private int dayCount;
@@ -20,7 +19,7 @@ public class LemonadeStand {
 		moneyMine = 20.00;
 		pricePerCup = 0.25;
 		qty = new int[]{0, 0, 0, 0};
-		ratio = new int[]{0, 0, 0};
+		ratio = new int[]{0, 0, 0, 12};
 		dayCount = 0;
 		totalCustomers = 0;
 	}
@@ -29,7 +28,7 @@ public class LemonadeStand {
 		moneyMine = money;
 		pricePerCup = 0.25;
 		qty = new int[]{0, 0, 0, 0};
-		ratio = new int[]{0, 0, 0};
+		ratio = new int[]{0, 0, 0, 12};
 		dayCount = 0;
 		totalCustomers = 0;
 	}
@@ -67,10 +66,6 @@ public class LemonadeStand {
 		else if (input.equals("start day")) {
 			
 		}
-		else {
-			navigation(sc);
-			return;
-		}
 		
 		navigation(sc);
 	}
@@ -96,32 +91,16 @@ public class LemonadeStand {
 	}
 
 	// Code made for cost having 3 elements, not 4
-	public void shopping(Scanner sc) { // prepare buying
-		getInventory();
-		
-		System.out.println("\nDo you want to go shopping for supplies? (y/n)");
-		String shop = sc.nextLine();
-		shop = shop.toLowerCase();
-		if (shop.equals("y")) {
-			buying(sc);
-		}
-		else if (shop.equals("n") == false) {
-			System.out.println("Enter y or n");
-			shopping(sc);
-		}
-		return;
-	}
-	
-	public void buying(Scanner sc) { // buy what
-		System.out.println("\nWhat do you want to buy: Lemons, Sugar, or Ice?");
-		String buy = sc.nextLine();
-		buy = buy.toLowerCase();
-		while (buy.equals("lemons") == false && buy.equals("sugar") == false && buy.equals("ice") == false) {
+	public void shopping(Scanner sc) { // buy what
+		System.out.println("\nWhat do you want to buy: Lemons, Sugar, Ice, or Cups?");
+		String buy = sc.nextLine().toLowerCase();
+		while (buy.equals("lemons") == false && buy.equals("sugar") == false && buy.equals("ice") == false && buy.equals("cups")) {
 			System.out.println("\nEnter lemons, sugar, or ice");
 			buy = sc.nextLine();
 		}
 
 		int l = buy.length();
+		// Find new equation
 		int index = (l % 5)/3 + (l % 2); // Converts string to corresponding number index for arrays
 		
 		System.out.println("\nYou have " + qty[index] + " " + nameSuppliesPlural[index]);
@@ -145,7 +124,7 @@ public class LemonadeStand {
 		String response = sc.nextLine();
 		response = response.toLowerCase();
 		if (response.equals("y")) {
-			buying(sc);
+			shopping(sc);
 		}
 		return;
 	}
