@@ -4,8 +4,11 @@ public class LemonadeStand {
 	// declare variables
 	private double moneyMine;
 
+	final String[] options = {"Check Inventory", "Check Weather", "Go Shopping", "Adjust Recipe", "Start Day\n"};
 	final String[] nameSuppliesPlural = {" Lemons", " Sugar Cubes", " Ice Cubes", " Cups"};
 	final String[] nameSuppliesSingular = {"Lemon", "Sugar Cube", "Ice Cube", "Cup"};
+	final String[] intro = {"Lemons per Pitcher: ", "Sugar per Pitcher: ", "Ice per Cup: ", "Cups per Pitcher "};
+	final String[] end = {" Lemons", " Cubes", " Cubes", " Cups"};
 
 	final double[] cost = {0.25, 0.20, 0.0025, 0.20}; // {Lemons, Sugar, Ice, Cups}
 	private int[] qty; // {Lemons, Sugar, Ice, Cups}
@@ -35,35 +38,34 @@ public class LemonadeStand {
 		setBasics();
 	}
 	
-	public void instructions(Scanner sc) { // prints instructions
+	// prints instructions
+	public void instructions(Scanner sc) { 
 		System.out.println("\nWelcome to the game Lemonade Stand!");
 		System.out.println("\nYou will running a lemonade stand,");
 		System.out.println("making lemonade, and selling lemonade");
-		//System.out.println("\nYou will be able to choose the recipe");
-		//System.out.println("of the lemonade and how much it costs");
 		System.out.println("\nLet's hope your stand is profitable!");
 	}
 	
+	// Guides User to actions
 	public void navigation(Scanner sc) {
 		System.out.println("\n\nWhat do you want to do?\nType the option you want to do");
 		
 		System.out.println("\nAction Options:");
-		String[] options = new String[]{"Check Inventory", "Check Weather", "Go Shopping", "Adjust Recipe", "Start Day\n"};
-		
 		for (int i = 0; i < 5; i++) {
 			System.out.println(options[i]);
 		}
 		
 		String input = sc.nextLine().toLowerCase();
 		
+		// using .contains() instead of .equals() b/c lazy when typing
 		if (input.contains("inv")) {
 			System.out.println("--------------------------------------------------------------------------------------------------------");
-			getInventory();
+			printInventory();
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("weather")) {
 			System.out.println("--------------------------------------------------------------------------------------------------------");
-			getForecast();
+			printForecast();
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("shop")) {
@@ -85,6 +87,7 @@ public class LemonadeStand {
 		navigation(sc);
 	}
 	
+	// Simplifies Constructors
 	public void setBasics() {
 		pricePerCup = 0.25;
 		qty = new int[]{0, 0, 0, 0};
@@ -142,6 +145,7 @@ public class LemonadeStand {
 		totalCustomers = (int) (20*Math.random() + adjustment) + 2*dayCount;
 	}
 
+	// Calculates pitchCount & availCups based off recipe and inventory
 	public void setSellQty() {
 		int temp = qty[0] / ratio[0];
 		for (int i = 1; i < 4; i++) {
@@ -158,32 +162,30 @@ public class LemonadeStand {
 		availCups = pitchCount * ratio[3];
 	}	
 
-	public void getInventory() {
+	public void printInventory() {
 		for (int i = 0; i < 4; i++) {
 			System.out.println(qty[i] + nameSuppliesPlural[i]);
 		}
 		System.out.println("You have $" + moneyMine);
 	}
 
-	public void getRecipe(String title) {
-		String[] intro = {"Lemons per Pitcher: ", "Sugar per Pitcher: ", "Ice per Cup: ", "Cups per Pitcher "};
-		String[] end = {" Lemons", " Cubes", " Cubes", " Cups"};
-		
+	public void printRecipe(String title) {
 		System.out.println(title + ":\n");
 		for (int i = 0; i < 4; i++) {
-			System.out.println(intro[i] + ratio[i] + end[i]);
+			System.out.println(intro[i] + ratio[i] + end[i]); // intro & end instance variables
 		}
 	}
 
-	public void getPricePerCup() {
+	public void printPricePerCup() {
 		System.out.println("Price per Cup: $" + pricePerCup);
 	}
 
-	public void getForecast() {
+	public void printForecast() {
 		System.out.println("Weather: " + weather);
-		System.out.println("Temperature: " + temperature + "\u00B0F");
+		System.out.println("Temperature: " + temperature + "\u00B0F"); // unicode to get degree symbol + F
 	}
 
+	// Deals with purchase in shopping
 	public void transaction(Scanner sc, int index) {
 		System.out.println("\nYou have " + qty[index] +  nameSuppliesPlural[index]);
 		System.out.println("1 " + nameSuppliesSingular[index] + " costs $ " + cost[index]);
@@ -196,7 +198,7 @@ public class LemonadeStand {
 
 		String response = sc.nextLine();
 
-		while (!(response.equals("y") || response.equals("n"))) {
+		while (!(response.equals("y") || response.equals("n"))) { //Ensure valid response
 			System.out.println("Enter y or n");
 			response = sc.nextLine();
 		}
@@ -213,10 +215,10 @@ public class LemonadeStand {
 		System.out.println("\nYou now have " + qty[index] + nameSuppliesPlural[index] + " & $" + moneyMine + " remaining");
 	}
 
-	public void shopping(Scanner sc) { // buy what
+	public void shopping(Scanner sc) { // buy supplies
 		System.out.println("\nWhat do you want to buy: Lemons, Sugar, Ice, or Cups?");
 		String buy = sc.nextLine().toLowerCase();
-		while (!(buy.contains("lemon") || buy.contains("sugar") || buy.contains("ice") || buy.contains("cup"))) {
+		while (!(buy.contains("lemon") || buy.contains("sugar") || buy.contains("ice") || buy.contains("cup"))) { //Ensure valid response
 			System.out.println("\nEnter lemons, sugar, or ice");
 			buy = sc.nextLine().toLowerCase();
 		}
@@ -235,6 +237,7 @@ public class LemonadeStand {
 		return;
 	}
 	
+	// categoricalizes responses into numbers
 	public int updateRecipe(Scanner sc) {
 		String response = sc.nextLine().toLowerCase();
 		if (response.contains("nothing")) {
@@ -262,8 +265,8 @@ public class LemonadeStand {
 	}
 
 	public void recipe(Scanner sc) {
-		getRecipe("Current Recipe");
-		getPricePerCup();
+		printRecipe("Current Recipe");
+		printPricePerCup();
 		System.out.println("\nWith the following recipe, you can make " + pitchCount + " pitchers of lemonade");
 		
 		System.out.println("\nDo you want to edit anything?");
@@ -285,13 +288,14 @@ public class LemonadeStand {
 			String buffer2 = sc.nextLine();
 		}
 
-		setSellQty();
+		setSellQty(); //Update pitchCount & availCups
 		
-		getRecipe("Updated Recipe");
-		getPricePerCup();
+		printRecipe("Updated Recipe");
+		printPricePerCup();
 		System.out.println("\nWith the following recipe, you can make " + pitchCount + " pitchers of lemonade");
 	}
 
+	// calculates percentage of total customers that buy
 	public double percentBuy() {
 		// return percentage as double
 		// quarter chance baseline
@@ -307,6 +311,7 @@ public class LemonadeStand {
 		return percent;
 	}
 
+	// returns outcome of Lemonade Stand for the day
 	public void sellLemonade(Scanner sc) {
 		System.out.println("Day " + (dayCount + 1) + "\n\n");
 
@@ -333,8 +338,9 @@ public class LemonadeStand {
 		}
 
 		System.out.println("\nCurrent Inventory:");
-		getInventory();
+		printInventory();
 
+		// Preparations for next day
 		dayCount++;
 		setWeather();
 		setTemperature();
