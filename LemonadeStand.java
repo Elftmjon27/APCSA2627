@@ -1,5 +1,7 @@
 import java.util.Scanner;
 
+// ADD BANKRUPTCY &/OR QUOTA PER WEEK
+
 public class LemonadeStand {
 	// declare variables
 	private double moneyMine;
@@ -9,6 +11,7 @@ public class LemonadeStand {
 	final String[] nameSuppliesSingular = {"Lemon", "Sugar Cube", "Ice Cube", "Cup"};
 	final String[] intro = {"Lemons per Pitcher: ", "Sugar per Pitcher: ", "Ice per Cup: ", "Cups per Pitcher "};
 	final String[] end = {" Lemons", " Cubes", " Cubes", " Cups"};
+	private int limit; // For recipes, see which item is limiting it
 
 	final double[] cost = {0.25, 0.20, 0.0025, 0.20}; // {Lemons, Sugar, Ice, Cups}
 	private int[] qty; // {Lemons, Sugar, Ice, Cups}
@@ -29,7 +32,7 @@ public class LemonadeStand {
 	private int dayCount;
 	
 	public LemonadeStand() {
-		moneyMine = 20.00;
+		moneyMine = 50.00;
 		setBasics();
 	}
 	
@@ -59,29 +62,36 @@ public class LemonadeStand {
 		
 		// using .contains() instead of .equals() b/c lazy when typing
 		if (input.contains("inv")) {
-			System.out.println("--------------------------------------------------------------------------------------------------------");
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			printInventory();
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("weather")) {
-			System.out.println("--------------------------------------------------------------------------------------------------------");
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			printForecast();
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("shop")) {
-			System.out.println("--------------------------------------------------------------------------------------------------------");
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			shopping(sc);
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("adjust") || input.contains("recipe")) {
-			System.out.println("--------------------------------------------------------------------------------------------------------");
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			recipe(sc);
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("start") || input.contains("day")) {
-			System.out.println("--------------------------------------------------------------------------------------------------------");
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			sellLemonade(sc);
 			System.out.println("--------------------------------------------------------------------------------------------------------");
+		}
+		
+		if(input.equals("dev")) { // Testing shortcut for devs
+			for (int i = 0; i < 4; i++) {
+				qty[i] += 500;
+			}
+			moneyMine += 100;
 		}
 		
 		navigation(sc);
@@ -148,25 +158,33 @@ public class LemonadeStand {
 	// Calculates pitchCount & availCups based off recipe and inventory
 	public void setSellQty() {
 		int temp = qty[0] / ratio[0];
+		limit = 0;
 		for (int i = 1; i < 4; i++) {
 			if (temp > qty[i] / ratio[i] && i != 2) {
 				temp = qty[i] / ratio[i];
+				limit = i;
 			}
 		}
 
 		if(qty[2] / (ratio[3]*ratio[2]) < temp) { // special if statement b/c ice is by per cup instead of per pitcher
 			temp = qty[2] / (ratio[3]*ratio[2]);
+			limit = 2;
 		}
 
 		pitchCount = temp;
 		availCups = pitchCount * ratio[3];
 	}	
 
+	public void printMoneyMine() {
+		System.out.println("You have $" + moneyMine);
+	}
+
 	public void printInventory() {
 		for (int i = 0; i < 4; i++) {
 			System.out.println(qty[i] + nameSuppliesPlural[i]);
 		}
-		System.out.println("You have $" + moneyMine);
+		
+		printMoneyMine();
 	}
 
 	public void printRecipe(String title) {
@@ -189,9 +207,14 @@ public class LemonadeStand {
 	public void transaction(Scanner sc, int index) {
 		System.out.println("\nYou have " + qty[index] +  nameSuppliesPlural[index]);
 		System.out.println("1 " + nameSuppliesSingular[index] + " costs $ " + cost[index]);
+		printMoneyMine();
 		System.out.println("\nHow many" + (nameSuppliesPlural[index]).toLowerCase() + " do you want to buy? (int)"); // If user does not enter int, Exception Error
 		int amount = sc.nextInt();
 		String buffer = sc.nextLine(); 
+
+		if (amount == 0) { // goes back if not want buy any of said supply
+			return;
+		}
 
 		System.out.println("\n" + amount + nameSuppliesPlural[index] + " will cost $" + cost[index]*amount);
 		System.out.println("Are you sure about the cost? (y/n)");
@@ -208,6 +231,11 @@ public class LemonadeStand {
 			transaction(sc, index);
 			return;
 		}
+		
+		if(response.equals("n")) {
+			transaction(sc, index);
+			return;
+		}
 
 		qty[index] += amount;
 		moneyMine -= cost[index]*amount;
@@ -221,6 +249,10 @@ public class LemonadeStand {
 		while (!(buy.contains("lemon") || buy.contains("sugar") || buy.contains("ice") || buy.contains("cup"))) { //Ensure valid response
 			System.out.println("\nEnter lemons, sugar, or ice");
 			buy = sc.nextLine().toLowerCase();
+		}
+
+		if (buy.equals("cup")) { // ensures index formula works when abbrev. cups to cup
+			buy = "cups";
 		}
 
 		int l = buy.length();
@@ -267,7 +299,13 @@ public class LemonadeStand {
 	public void recipe(Scanner sc) {
 		printRecipe("Current Recipe");
 		printPricePerCup();
+		System.out.println("\nInventory:");
+		printInventory();
+		
+		setSellQty();
+		
 		System.out.println("\nWith the following recipe, you can make " + pitchCount + " pitchers of lemonade");
+		System.out.println("You are being limited by your amount of" + nameSuppliesPlural[limit]);
 		
 		System.out.println("\nDo you want to edit anything?");
 		System.out.println("If so, type what do you want to edit (one at a time) or type \"nothing\"");
@@ -293,6 +331,14 @@ public class LemonadeStand {
 		printRecipe("Updated Recipe");
 		printPricePerCup();
 		System.out.println("\nWith the following recipe, you can make " + pitchCount + " pitchers of lemonade");
+		
+		System.out.println("\nDo you want to continue editing the recipe? (y/n)");
+
+		String response = sc.nextLine().toLowerCase();
+		if (response.equals("y")) { // assumes no y means no
+			recipe(sc);
+		} 
+		return;
 	}
 
 	// calculates percentage of total customers that buy
