@@ -1,9 +1,9 @@
 import java.util.Scanner;
 
 // ADD BANKRUPTCY &/OR QUOTA PER WEEK
+// have method that activates quota feature
 
 public class LemonadeStand {
-	// declare variables
 	private double moneyMine;
 
 	final String[] options = {"Check Inventory", "Check Weather", "Go Shopping", "Adjust Recipe", "Start Day\n"};
@@ -31,13 +31,31 @@ public class LemonadeStand {
 	private int totalCustomers;
 	private int dayCount;
 	
+	private boolean quotaExist;
+	final double quotaIncrement = 100.00;
+	private double dailyQuota;
+	
 	public LemonadeStand() {
 		moneyMine = 50.00;
+		quotaExist = false;
 		setBasics();
 	}
 	
 	public LemonadeStand(double money) {
 		moneyMine = money;
+		quotaExist = false;
+		setBasics();
+	}
+	
+	public LemonadeStand(boolean quota) {
+		moneyMine = 50.00;
+		quotaExist = quota;
+		setBasics();
+	}
+	
+	public LemonadeStand(double money, boolean quota) {
+		moneyMine = money;
+		quotaExist = quota;
 		setBasics();
 	}
 	
@@ -94,6 +112,10 @@ public class LemonadeStand {
 			moneyMine += 100;
 		}
 		
+		if(checkDailyQuota) {
+			return;
+		}
+		
 		navigation(sc);
 	}
 	
@@ -108,6 +130,7 @@ public class LemonadeStand {
 		setWeather();
 		setTemperature();
 		setTotalCustomers();
+		activateQuota(quotaExist);
 	}
 
 	public void setWeather() {
@@ -376,6 +399,10 @@ public class LemonadeStand {
 		double revenue = pricePerCup * sold;
 
 		System.out.println("You made $" + revenue + " today!\n");
+		
+		if (quotaExist) {
+			System.out.println("By the end of the week, you have atleast $" + dailyQuota);
+		}
 
 		for (int i = 0; i < 4; i++) {
 			qty[i] -= ratio[i] * sold;
@@ -391,6 +418,18 @@ public class LemonadeStand {
 		setWeather();
 		setTemperature();
 		setTotalCustomers();
+	}
+	
+	public double setDailyQuota() {
+		dailyQuota = day / 7 * quotaIncrement;
+	}
+	
+	public boolean checkDailyQuota() {
+		if (moneyMine < dailQuota) {
+			System.out.println("Unfortunately, you did not meet the weekly quota");
+			return true;
+		}
+		return false;
 	}
 }
 
