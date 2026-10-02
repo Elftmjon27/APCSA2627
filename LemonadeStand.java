@@ -1,32 +1,30 @@
 import java.util.Scanner;
 
-// ADD BANKRUPTCY &/OR QUOTA PER WEEK
-// have method that activates quota feature
-
 public class LemonadeStand {
+	
 	private double moneyMine;
 
-	final String[] options = {"Check Inventory", "Check Weather", "Go Shopping", "Adjust Recipe", "Start Day\n"};
+	final String[] options = {"Check Inventory", "Check Weather", "Go Shopping", "Adjust Recipe", "Start Day", "View Stats", "End Game\n"};
 	final String[] nameSuppliesPlural = {" Lemons", " Sugar Cubes", " Ice Cubes", " Cups"};
 	final String[] nameSuppliesSingular = {"Lemon", "Sugar Cube", "Ice Cube", "Cup"};
 	final String[] intro = {"Lemons per Pitcher: ", "Sugar per Pitcher: ", "Ice per Cup: ", "Cups per Pitcher "};
 	final String[] end = {" Lemons", " Cubes", " Cubes", " Cups"};
-	private int limit; // For recipes, see which item is limiting it
+	final String[] actionsDone = {"\nYou checked your Inventory ", "You checked the Weather ", "You went Shopping ", "You adjusted your Recipe "};
 
 	final double[] cost = {0.25, 0.20, 0.0025, 0.20}; // {Lemons, Sugar, Ice, Cups}
-	private int[] qty; // {Lemons, Sugar, Ice, Cups}
 	final double[] spoilRate = {0.1, 0.1, 1, 0}; // percentage that spoils at end of day
+	private int[] qty; // {Lemons, Sugar, Ice, Cups}
 
 	private double pricePerCup;
 	private int[] ratio; // {lemons per pitcher, sugar per pitcher, ice per cup, cups per pitcher}
 
 	private int availCups;
 	private int pitchCount; // Total pitches of lemonade remaining
+	private int limit; // For recipes, see which item is limiting it
 
 	final String[] weatherOptions = {"Sunny / Hot & Dry", "Sunny & Warm / Clear", "Cloud / Overcast", "Rainy / Thunderstorms"};
 	private String weather;
 	private int temperature;
-	private double popularity;
 	
 	private int totalCustomers;
 	private int dayCount;
@@ -34,6 +32,19 @@ public class LemonadeStand {
 	private boolean quotaExist;
 	final double quotaIncrement = 100.00;
 	private double dailyQuota;
+	private boolean singleReward = false;
+	
+	private double allMoneyGained = 0; // not include starting money
+	private double allMoneySpent = 0;
+	private int	allCustomersAppeared = 0;
+	private int allCustomersSold = 0;
+	private int allPitches = 0;
+	private int allCups = 0;
+	private int[] allQty = {0, 0, 0, 0};
+	private double[] allQtySpent = {0, 0, 0, 0};
+	private int[] allQtySpoiled = {0, 0, 0, 0};
+	private int[] allVisitCount = {0, 0, 0, 0}; // Check Inventory, Check Weather, Go Shopping, Adjust Recipe
+	private boolean cheat = false;
 	
 	public LemonadeStand() {
 		moneyMine = 50.00;
@@ -61,18 +72,31 @@ public class LemonadeStand {
 	
 	// prints instructions
 	public void instructions(Scanner sc) { 
+		System.out.println("\n--------------------------------------------------------------------------------------------------------");
 		System.out.println("\nWelcome to the game Lemonade Stand!");
 		System.out.println("\nYou will running a lemonade stand,");
 		System.out.println("making lemonade, and selling lemonade");
-		System.out.println("\nLet's hope your stand is profitable!");
+		System.out.println("\nLet's hope your stand is profitable!\n");
 	}
 	
 	// Guides User to actions
 	public void navigation(Scanner sc) {
-		System.out.println("\n\nWhat do you want to do?\nType the option you want to do");
 		
-		System.out.println("\nAction Options:");
-		for (int i = 0; i < 5; i++) {
+		if(dayCount % 7 == 0 && dayCount != 0 && checkQuota()) { // Checks whether met weekly quota
+			System.out.println("\nUnfortunately, you did not meet the weekly quota\n");
+			viewStats();
+			System.out.println("\nThank you for playing!");
+			return;
+		} else if (singleReward) {
+			singleReward = false;
+			System.out.println("\nCongratuations, you were able to meet the weekly quota of $" + (dailyQuota - quotaIncrement));
+			System.out.println("For this week, the new quota is $" + dailyQuota);
+		}
+		
+		System.out.println("\nWhat do you want to do?\nType the option you want to do");
+		
+		System.out.println("\nAction Options:\n");
+		for (int i = 0; i < 7; i++) {
 			System.out.println(options[i]);
 		}
 		
@@ -82,21 +106,25 @@ public class LemonadeStand {
 		if (input.contains("inv")) {
 			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			printInventory();
+			allVisitCount[0] ++;
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("weather")) {
 			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			printForecast();
+			allVisitCount[1] ++;
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("shop")) {
 			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			shopping(sc);
+			allVisitCount[2] ++;
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("adjust") || input.contains("recipe")) {
 			System.out.println("\n--------------------------------------------------------------------------------------------------------");
 			recipe(sc);
+			allVisitCount[3] ++;
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
 		else if (input.contains("start") || input.contains("day")) {
@@ -104,16 +132,25 @@ public class LemonadeStand {
 			sellLemonade(sc);
 			System.out.println("--------------------------------------------------------------------------------------------------------");
 		}
+		else if (input.contains("view") || input.contains("stats")) {
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
+			viewStats();
+			System.out.println("--------------------------------------------------------------------------------------------------------");
+		}
+		else if (input.contains("end") || input.contains("game")) {
+			System.out.println("\n--------------------------------------------------------------------------------------------------------");
+			viewStats();
+			System.out.println("\nThank you for playing!");
+			return;
+		}
 		
 		if(input.equals("dev")) { // Testing shortcut for devs
 			for (int i = 0; i < 4; i++) {
 				qty[i] += 500;
 			}
 			moneyMine += 100;
-		}
-		
-		if(checkDailyQuota) {
-			return;
+			dayCount += 6;
+			cheat = true;
 		}
 		
 		navigation(sc);
@@ -130,7 +167,7 @@ public class LemonadeStand {
 		setWeather();
 		setTemperature();
 		setTotalCustomers();
-		activateQuota(quotaExist);
+		setQuota();
 	}
 
 	public void setWeather() {
@@ -196,7 +233,24 @@ public class LemonadeStand {
 
 		pitchCount = temp;
 		availCups = pitchCount * ratio[3];
-	}	
+	}
+	
+	public void setQuota() {
+		if (quotaExist) {
+		dailyQuota = dayCount / 7 * quotaIncrement;
+		}
+	}
+	
+	public boolean checkQuota() {
+		if(quotaExist) {
+			if (moneyMine < dailyQuota) {
+				return true;
+			}
+			singleReward = true; 
+			setQuota();
+		}
+		return false;
+	}
 
 	public void printMoneyMine() {
 		System.out.println("You have $" + moneyMine);
@@ -262,6 +316,10 @@ public class LemonadeStand {
 
 		qty[index] += amount;
 		moneyMine -= cost[index]*amount;
+		
+		allQty[index] += amount;
+		allQtySpent[index] += cost[index]*amount;
+		allMoneySpent += cost[index]*amount;
 
 		System.out.println("\nYou now have " + qty[index] + nameSuppliesPlural[index] + " & $" + moneyMine + " remaining");
 	}
@@ -386,6 +444,9 @@ public class LemonadeStand {
 
 		setSellQty();
 		System.out.println("You made " + pitchCount + " pitchers " + "(" + availCups + " Cups)" + " of lemonade");
+		
+		allPitches += pitchCount;
+		allCups += availCups;
 
 		int customersBought = (int) (totalCustomers * percentBuy());
 		int sold = Math.min(availCups, customersBought);
@@ -395,19 +456,25 @@ public class LemonadeStand {
 		if (customersBought > availCups) {
 			System.out.println("More people ( " + (customersBought - sold) +  " ) wanted to buy your lemonade, but you ran out");
 		}
+		
+		allCustomersSold += sold;
+		allCustomersAppeared += customersBought;
 
 		double revenue = pricePerCup * sold;
 
 		System.out.println("You made $" + revenue + " today!\n");
+		moneyMine += revenue;
+		allMoneyGained += revenue;
 		
 		if (quotaExist) {
-			System.out.println("By the end of the week, you have atleast $" + dailyQuota);
+			System.out.println("By the end of day " + (int) (7  + 7 * dailyQuota / quotaIncrement) + ", you need to have atleast $" + dailyQuota + "\n");
 		}
 
 		for (int i = 0; i < 4; i++) {
 			qty[i] -= ratio[i] * sold;
 			System.out.println(qty[i]*spoilRate[i] + nameSuppliesPlural[i] + " spoiled");
 			qty[i] -= qty[i]*spoilRate[i];
+			allQtySpoiled[i] += qty[i]*spoilRate[i];
 		}
 
 		System.out.println("\nCurrent Inventory:");
@@ -420,16 +487,25 @@ public class LemonadeStand {
 		setTotalCustomers();
 	}
 	
-	public double setDailyQuota() {
-		dailyQuota = day / 7 * quotaIncrement;
-	}
-	
-	public boolean checkDailyQuota() {
-		if (moneyMine < dailQuota) {
-			System.out.println("Unfortunately, you did not meet the weekly quota");
-			return true;
+	public void viewStats() {
+		System.out.println("You have played for " + (dayCount + 1) + "\n");
+		System.out.println("Your max quota was $" + dailyQuota + "\n");
+		System.out.println("You have earned $" + allMoneyGained + " & spent $" + allMoneySpent + "\n");
+		System.out.println("You made " + allPitches + " pitches of lemonade, which amounts to " + allCups + " cups\n");
+		System.out.println("Out of " + allCustomersAppeared + " customers, you were able to sell to " + allCustomersSold + "\n");
+		
+		for (int i = 0; i < 4; i++) {
+			System.out.println("You bought " + allQty[i] + nameSuppliesPlural[i] + ", costing $" + allQtySpent[i]);
+			System.out.println(allQtySpoiled[i] + nameSuppliesPlural[i] + " spoiled");
 		}
-		return false;
+		
+		for (int j = 0; j < 4; j++) {
+			System.out.println(actionsDone[j] + allVisitCount[j] + " times");
+		}
+		
+		if(cheat) {
+			System.out.println("\nWe know what you have done");
+		}
 	}
 }
 
