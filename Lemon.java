@@ -7,8 +7,8 @@ public class Lemon {
 		// Call the method inside the Lemonade Stand class
 		Scanner sc = new Scanner(System.in);
 		
-		l1.instructions(sc);
-		l1.navigation(sc);
+		l1.instructions(sc); // prints out instructions
+		l1.navigation(sc); // runs the game
 	}
 }
 
