@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 public class LemonadeStand {
 	
-	// most important attributes to users
+	// most important user attributes
 	private double moneyMine;
 	private int[] qty; // {Lemons, Sugar, Ice, Cups}
 
